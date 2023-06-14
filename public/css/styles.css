@@ -1,0 +1,19 @@
+body {
+    background-color: cornflowerblue;
+}
+
+.container {
+    margin-top: 50px;
+    max-width: 500px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+textarea {
+    height: 150px;
+}

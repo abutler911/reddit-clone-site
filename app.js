@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
+const expressLayouts = require("express-ejs-layouts");
 
 const User = require("./models/user");
 const Post = require("./models/post");
@@ -31,12 +32,17 @@ mongoose
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.json());
+app.use(expressLayouts);
+app.set("layout", "layouts/main.ejs");
 // Routes
 app.get("/", (req, res) => {
   res.render("index");
 });
 
+app.get("/create-post", (req, res) => {
+  res.render("create-post");
+});
 app.get("/posts", async (req, res, next) => {
   try {
     const posts = await Post.find()
@@ -52,15 +58,24 @@ app.get("/posts", async (req, res, next) => {
 
 // Route to create a new post
 app.post("/posts", async (req, res, next) => {
+  console.log("Received request to create a new post");
+  console.log(req.body); // Log the request body
   try {
     const { title, content, username } = req.body;
     const post = new Post({ title, content, username });
     await post.save();
 
     // Associate the post with the user
-    const user = await User.findOne({ username });
-    user.posts.push(post);
-    await user.save();
+    let user;
+    try {
+      user = await User.findOne({ username });
+      if (user) {
+        user.posts.push(post);
+        await user.save();
+      }
+    } catch (error) {
+      console.error("Error finding user:", error);
+    }
 
     res.status(201).json(post);
   } catch (error) {
